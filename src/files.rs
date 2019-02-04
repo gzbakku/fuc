@@ -21,7 +21,11 @@ pub fn check_file(p:String) -> bool {
 pub fn read_file(p:String) -> Vec<String> {
     let o = File::open(p.clone()).unwrap();
     let r = BufReader::new(o);
-    let mut pool = Vec::new();
+    let mut pool: Vec<String> = Vec::new();
+    if check_file(p.clone()) == false {
+        println!("read_file-failed : file not found => path : {:?}",p.clone());
+        return pool;
+    }
     for line in r.lines() {
         match line {
             Ok(data) => {
@@ -87,6 +91,12 @@ pub fn db_dir(){
     for i in d {
         make_dir(pathify(i.to_string()));
     }
+}
+
+//check directory by folder name
+#[allow(dead_code)]
+pub fn check_dir(p:String) -> bool {
+    Path::new(&p).exists()
 }
 
 //make directory by folder name

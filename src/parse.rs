@@ -27,7 +27,8 @@ pub struct Index {
     pub order:OrderBy,
     pub tags:Vec<Tag>,
     pub hash:String,
-    pub index_id:String
+    pub index_id:String,
+    pub index_type:String
 }
 
 //this makes a index struct from a index query stirng
@@ -46,13 +47,19 @@ pub fn indexify(q:String,a:String) -> Index {
         tags_exists:false,
         tags:Vec::new(),
         hash:collection_id(a),
-        index_id:md5(q.clone())
+        index_id:md5(q.clone()),
+        index_type:String::new()
     };
 
     //split order and tags
     let mut pool = Vec::new();
     for i in q.split("_") {
         pool.push(i);
+    }
+
+    if pool.len() > 3 {
+        index.error = "invalid-query-cannot.use._.in.tag".to_string();
+        index.valid = false;
     }
 
     //process order here
@@ -65,6 +72,7 @@ pub fn indexify(q:String,a:String) -> Index {
             index.order_exists = true;
             index.order.tag = k[0].to_string();
             index.order.direction = k[1].to_string();
+            index.index_type = "order".to_string();
         } else {
             index.error = "invalid-order_by".to_string();
             index.valid = false;
@@ -123,6 +131,16 @@ pub fn indexify(q:String,a:String) -> Index {
             index.valid = false;
             index.error = "invalid-query-weight/search-order_by-both_exists".to_string();
         }
+    }
+
+    if search == true {
+        index.index_type = "search".to_string();
+    }
+    if weight == true {
+        index.index_type = "weight".to_string();
+    }
+    if search == false && weight == false {
+        index.index_type = "equal".to_string();
     }
 
     index.tags = sort_tags(tags_vec);

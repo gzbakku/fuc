@@ -1,21 +1,19 @@
 
-
-
-pub mod register;
-pub mod run;
-
-#[path="../server.rs"]
-mod server;
+mod docs;
+mod collection;
 
 use iron::status;
 use iron::prelude::*;
 
-pub fn run_controller(req: &mut Request) -> IronResult<Response> {
+#[path="../server.rs"]
+mod server;
+
+pub fn collection_controller(req: &mut Request) -> IronResult<Response> {
     let json_body = req.get::<bodyparser::Json>();
     let y;
     match json_body {
         Ok(Some(json_body)) => {
-            y = run::controller(json_body);
+            y = collection::controller(json_body);
         },
         Ok(None) => {
             y = server::error("invalid-request".to_string());
@@ -27,12 +25,12 @@ pub fn run_controller(req: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, y)))
 }
 
-pub fn register_controller(req: &mut Request) -> IronResult<Response> {
+pub fn docs_controller(req: &mut Request) -> IronResult<Response> {
     let json_body = req.get::<bodyparser::Json>();
     let y;
     match json_body {
         Ok(Some(json_body)) => {
-            y = register::controller(json_body);
+            y = docs::controller(json_body);
         },
         Ok(None) => {
             y = server::error("invalid-request".to_string());

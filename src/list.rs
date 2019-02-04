@@ -4,7 +4,7 @@ mod files;
 
 //insert the doc md5
 #[allow(dead_code)]
-pub fn insert(p:String,s:String){
+pub fn insert(p:String,s:String) {
     let fult = get_fult(p);
     let mut read = files::read_file(fult.clone());
     let pos = read.iter().position(|r| r == &s);
@@ -12,7 +12,7 @@ pub fn insert(p:String,s:String){
         Some(_n)=>{},
         None => {
             read.push(s);
-            files::write_file(fult,read);
+            files::write_file(fult.clone(),read);
         }
     }
 }
@@ -22,7 +22,7 @@ pub fn insert(p:String,s:String){
 pub fn get_fult(p:String) -> String {
     //get fump
     make_map(p.clone());
-    let fump = p.clone() + &"\\map.fump".to_string();
+    let fump = p.clone() + &"\\list.fump".to_string();
     let read = files::read_file(fump.clone());
     let fult_name = read[0].to_string();
     //read fult
@@ -44,7 +44,7 @@ pub fn get_fult(p:String) -> String {
 //make map before asking for fult
 #[allow(dead_code)]
 pub fn make_map(p:String){
-    let fump = p.clone() + &"\\map.fump".to_string();
+    let fump = p.clone() + &"\\list.fump".to_string();
     let fult = p.clone() + &"\\100.fult".to_string();
     if files::check_file(fump.clone()) == false {
         files::make_file(fump.clone());

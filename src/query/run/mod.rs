@@ -1,14 +1,17 @@
-#[path="../server.rs"]
+#[path="../../server.rs"]
 mod server;
 
-#[path="../files.rs"]
+#[path="../../files.rs"]
 mod files;
 
-#[path="../auth.rs"]
+#[path="../../auth.rs"]
 mod auth;
 
-#[path="../parse.rs"]
+#[path="../../parse.rs"]
 mod parse;
+
+#[path="../../common.rs"]
+mod common;
 
 use serde_json::{Result, Value};
 
@@ -26,8 +29,16 @@ pub fn controller(json: serde_json::value::Value) -> String {
     let token = clean(json["token"].to_string());
     let address = clean(json["address"].to_string());
     let query = clean(json["query"].to_string());
-    let limit = clean(json["limit"].to_string());
-    let params = arrayrify(clean(json["params"].to_string()));
+    let params;
+
+    match arrayrify(json["params"].to_string()) {
+        Ok(n)=>{
+            params = n;
+        },
+        Err(_e)=>{
+            return error("invalid-params".to_string());
+        }
+    }
 
     //verify the request
     let verify_token = auth::token_verify(user,token);
@@ -39,30 +50,49 @@ pub fn controller(json: serde_json::value::Value) -> String {
     }
 
     //get the index
-    let index = parse::indexify(query.clone().to_string());
+    let index = parse::indexify(query.clone().to_string(),address.clone());
     let collection_path = files::pathify(
         parse::address_locatify(address.clone()) +
         &"\\index".to_string()
     );
-    let mut path = collection_path.clone();
+    let mut path = collection_path.clone() + &"\\".to_string() + &index.clone().index_id;
 
-    //loop through tags
+    let mut found = true;
+    let mut docs : Vec<String> = Vec::new();
+
+    //loop through tagss
     //break the loop if the tag fails
     for i in index.clone().tags {
         if i.function == "equal" {
-            path = equal::run(collection_path.clone(),i.tag,params.clone());
+            if equal::check(path.clone(),i.clone().tag,params.clone()) == false {
+                common::error("invalid_path-in loop".to_string());
+                found = false;
+                break;
+            }
+            path = equal::run(path.clone(),i.clone().tag,params.clone());
         } else if i.function == "weight" {
-            path = order::run(collection_path.clone(),i.tag,params.clone());
+            docs = order::run(path.clone(),i.clone().tag,params.clone());
         } else if i.function == "search" {
-            path = search::run(collection_path.clone(),i.tag,params.clone());
+            docs = search::run(path.clone(),i.clone().tag,params.clone());
         }
     }
 
-    if index.clone().order_exists == true {
-        path = order::run(collection_path.clone(),i.order.tag,params.clone());
+    if found == false {
+        common::error("not-found".to_string());
+        return success(docs);
     }
 
-    return success();
+    if index.clone().index_type == "equal" {
+        docs = equal::fetch(path.clone(),params.clone());
+    }
+
+    if index.clone().order_exists == true {
+        docs = order::run(path.clone(),index.clone().order.tag,params.clone());
+    }
+
+    //println!("{:?}",docs);
+
+    return success(docs);
 
 }
 
@@ -97,17 +127,17 @@ fn verify_query(q:String,a:String) -> bool {
 //********************************************************
 //common
 
-fn success() -> String {
-    stringify(server::Result {
+fn success(d:Vec<String>) -> String {
+    stringify(server::ResultQuery {
         success:true,
         error:String::new(),
-        docs:String::new(),
+        docs:d,
         message:String::new(),
     })
 }
 
 fn error(err:String) -> String {
-    stringify(server::Result {
+    stringify_error(server::Result {
         success:false,
         error:String::from(err),
         docs:String::new(),
@@ -115,7 +145,20 @@ fn error(err:String) -> String {
     })
 }
 
-fn stringify(hold: server::Result) -> String {
+fn stringify(hold: server::ResultQuery) -> String {
+    let work = serde_json::to_string(&hold);
+    match work {
+        Ok(n) => {
+            return n
+        },
+        Err(err) => {
+            println!("{:?}",err);
+            return "error".to_string()
+        }
+    };
+}
+
+fn stringify_error(hold: server::Result) -> String {
     let work = serde_json::to_string(&hold);
     match work {
         Ok(n) => {

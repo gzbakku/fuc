@@ -30,10 +30,9 @@ pub fn wordify(p:String,s:String){
 #[allow(dead_code)]
 fn base_dir(p:String){
     let hold = vec![
-        "\\search",
-        "\\search\\words\\",
-        "\\search\\words\\dict\\",
-        "\\search\\map\\",
+        "words\\",
+        "words\\dict\\",
+        "map\\",
     ];
     for i in hold {
         files::make_dir(p.clone() + &i.to_string());
@@ -139,7 +138,7 @@ pub fn group(s:String) -> String {
 #[allow(dead_code)]
 fn dictonerify(p:String,w:String,s:String){
     let path = p +
-               &"\\search\\words\\dict\\".to_string() +
+               &"words\\dict\\".to_string() +
                &s.to_string() +
                &".fpoi".to_string();
     if files::check_file(path.clone()) == false {
@@ -153,7 +152,7 @@ fn dictonerify(p:String,w:String,s:String){
 fn mapify(p:String,s:String,g:String) {
 
     //add group id to the map
-    let map_path = p.clone() + &"search\\words\\map.fump".to_string();
+    let map_path = p.clone() + &"words\\map.fump".to_string();
 
     //println!("map_path : {:?}",map_path);
 
@@ -170,7 +169,7 @@ fn mapify(p:String,s:String,g:String) {
     }
 
     //add score to group
-    let group_path = p.clone() + &"search\\words\\".to_string() + &g + &".fgup".to_string();
+    let group_path = p.clone() + &"words\\".to_string() + &g + &".fgup".to_string();
     files::make_file(group_path.clone());
     let mut read = files::read_file(group_path.clone());
     let pos = read.iter().position(|r| r == &s.clone());

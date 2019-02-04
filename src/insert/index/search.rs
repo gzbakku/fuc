@@ -11,7 +11,9 @@ mod list;
 #[path="../../words.rs"]
 mod words;
 
-pub fn make(p:String,t:String,d:serde_json::value::Value) {
+pub fn make(mut p:String,t:String,d:serde_json::value::Value) {
+    p = p + &"\\search\\".to_string() + &t.clone() + &"\\".to_string();
+    files::make_dir(p.clone());
     let doc_id = parse::md5(d.clone().to_string());
     let tag_value = d[t].clone().to_string();
     words::wordify(p.clone(),tag_value.clone());
@@ -38,7 +40,7 @@ fn breakify_controller(p:String,mut v:Vec<String>,id:String){
 }
 
 fn treedefy_controller(p:String,v:Vec<String>,id:String){
-    let mut path = p.clone() + &"search\\map\\".to_string();
+    let mut path = p.clone() + &"map\\".to_string();
     for i in v {
         path = treedefy(path.clone(),i,id.clone());
     }
@@ -52,7 +54,7 @@ fn treedefy(p:String,w:String,id:String) -> String {
 }
 
 fn individualify(p:String,w:String,id:String){
-    let path = p.clone() + &"search\\map\\".to_string() + &w.to_string() + &"\\".to_string();
+    let path = p.clone() + &"map\\".to_string() + &w.to_string() + &"\\".to_string();
     files::make_dir(path.clone());
     list::insert(path,id);
 }

@@ -5,8 +5,8 @@ mod server;
 #[path="../files.rs"]
 pub mod files;
 
-use crypto::sha2::Sha256;
-use crypto::digest::Digest;
+#[path="../auth.rs"]
+mod auth;
 
 pub fn controller(json: serde_json::value::Value) -> String {
 
@@ -20,10 +20,7 @@ pub fn controller(json: serde_json::value::Value) -> String {
     }
 
     let key = read_key();
-
-    let mut hasher = Sha256::new();
-    hasher.input_str(&json["key"].to_string());
-    let hashed_key = hasher.result_str();
+    let hashed_key = auth::hash256(clean(json["key"].to_string()));
 
     if hashed_key != key {
         return error("access-denied".to_string())

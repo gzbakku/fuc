@@ -23,12 +23,13 @@ use router::Router;
 //mods
 
 //user and connection mods
-mod connect;
+mod init;
 mod user;
 
 //document and query mods
 mod insert;
 mod query;
+mod get;
 
 //this is used to send erros
 mod server;
@@ -43,16 +44,20 @@ fn main() {
     let mut router = Router::new();
 
     router.get("/", index_controller, "index");
+    router.post("/init", init::controller, "init");
+
+    router.post("/user/register", user::register_controller, "user_register");
+    router.post("/user/reset", user::reset_controller, "user_reset");
+    router.post("/user/delete", user::delete_controller, "user_delete");
+    router.post("/user/connect", user::connect_controller, "user_connect");
+
     router.post("/insert", insert_controller, "insert");
 
-    router.post("/user/register", user_register_controller, "register");
-    router.post("/user/reset", user_reset_controller, "reset");
-    router.post("/user/delete", user_delete_controller, "delete");
+    router.post("/query/register", query::register_controller, "query_register");
+    router.post("/query", query::run_controller, "query_do");
 
-    router.post("/connect", connect_controller, "connect");
-
-    router.post("/query/register", query_register_controller, "query_register");
-    router.post("/query", query_run_controller, "query_do");
+    router.post("/get/docs", get::docs_controller, "get_docs");
+    router.post("/get/collection", get::collection_controller, "get_collection");
 
     Iron::new(router).http("localhost:3000").unwrap();
 
@@ -61,113 +66,11 @@ fn main() {
 //******************************************************
 //request controllers
 
-pub fn query_run_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = query::run::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
-pub fn query_register_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = query::register::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
-pub fn connect_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = connect::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
-pub fn user_delete_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = user::delete::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
-pub fn user_reset_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = user::reset::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
-pub fn user_register_controller(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
-    let y;
-    match json_body {
-        Ok(Some(json_body)) => {
-            y = user::register::controller(json_body);
-        },
-        Ok(None) => {
-            y = errorify("invalid-request".to_string());
-        },
-        Err(_err) => {
-            y = errorify("unknown-error".to_string());
-        }
-    }
-    Ok(Response::with((status::Ok, y)))
-}
-
 fn index_controller(_req: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, "what are you doing here".to_string())))
 }
 
-pub fn insert_controller(req: &mut Request) -> IronResult<Response> {
+fn insert_controller(req: &mut Request) -> IronResult<Response> {
     let json_body = req.get::<bodyparser::Json>();
     let y;
     match json_body {
@@ -175,36 +78,11 @@ pub fn insert_controller(req: &mut Request) -> IronResult<Response> {
             y = insert::controller(json_body);
         },
         Ok(None) => {
-            y = errorify("invalid-request".to_string());
+            y = server::error("invalid-request".to_string());
         },
         Err(_err) => {
-            y = errorify("unknown-error".to_string());
+            y = server::error("unknown-error".to_string());
         }
     }
     Ok(Response::with((status::Ok, y)))
-}
-
-//******************************************************
-//common
-
-fn errorify(error:String) -> String {
-    stringify(server::Result {
-        success:false,
-        error:String::from(error),
-        docs:String::new(),
-        message:String::new(),
-    })
-}
-
-fn stringify(hold:server::Result) -> String {
-    let dulo = serde_json::to_string(&hold);
-    match dulo {
-        Ok(n) => {
-            return n
-        },
-        Err(err) => {
-            println!("{:?}",err);
-            return "error".to_string()
-        }
-    };
 }

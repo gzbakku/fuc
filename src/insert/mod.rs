@@ -12,6 +12,12 @@ mod files;
 #[path="../parse.rs"]
 pub mod parse;
 
+#[path="../list.rs"]
+pub mod list;
+
+#[path="../common.rs"]
+pub mod common;
+
 mod index;
 
 use serde_json::{Result, Value};
@@ -35,6 +41,10 @@ pub fn controller(json: serde_json::value::Value) -> String {
     let verify_token = auth::token_verify(user,token);
     if verify_token == false {
         return error("access-denied".to_string())
+    }
+
+    if check_index(address.clone()) == false {
+        return error("index-not_found".to_string())
     }
 
     //extract docs in a vec from vec strings
@@ -65,6 +75,32 @@ pub fn controller(json: serde_json::value::Value) -> String {
 //********************************************************
 //modular functions
 
+fn check_index(address:String) -> bool {
+
+    let collection_id = parse::collection_id(address.clone());
+
+    let collection_path = files::pathify(
+        "\\fuc\\index\\".to_string() +
+        &collection_id.to_string() +
+        &".fui".to_string()
+    );
+
+    if files::check_file(collection_path.clone()) == false {
+        common::error("index-not_found".to_string());
+        return false;
+    }
+
+    let read = files::read_file(collection_path.clone());
+
+    if read.len() == 0 {
+        common::error("index-empty".to_string());
+        return false;
+    } else {
+        return true;
+    }
+
+}
+
 //insert serde doc as a string to a file
 fn savify(address:String,docs:Vec<Value>){
 
@@ -79,8 +115,9 @@ fn savify(address:String,docs:Vec<Value>){
         let file_id = parse::md5(i.clone().to_string());
         let file_path = collection_path.clone() +
                         &"\\".to_string() +
-                        &file_id.to_string() +
+                        &file_id.clone().to_string() +
                         &".json".to_string();
+        list::insert(collection_path.clone(),file_id.clone().to_string());
         files::make_file(file_path.clone());
         files::write_file(file_path.clone(),vec![i.clone().to_string()]);
     }
