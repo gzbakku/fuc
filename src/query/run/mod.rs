@@ -24,6 +24,16 @@ mod search;
 
 pub fn controller(json: serde_json::value::Value) -> String {
 
+    if
+        json["user"].is_null() ||
+        json["token"].is_null() ||
+        json["address"].is_null() ||
+        json["query"].is_null() ||
+        json["params"].is_null() 
+    {
+        return server::error("invalid-request".to_string())
+    }
+
     //localize the vars
     let user = clean(json["user"].to_string());
     let token = clean(json["token"].to_string());

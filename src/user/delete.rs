@@ -13,10 +13,10 @@ pub fn controller(json: serde_json::value::Value) -> String {
     files::db_dir();
 
     if
-        json["key"] == "null" ||
-        json["user"] == "null"
+        json["key"].is_null() ||
+        json["user"].is_null()
     {
-        return error("invalid_request-params".to_string())
+        return error("invalid_request-params".to_string());
     }
 
     let key = read_key();

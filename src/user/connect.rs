@@ -21,10 +21,10 @@ pub fn controller(json: serde_json::value::Value) -> String {
 
     //chekc if auth feilds exists in json
     if
-        json["user"] == "null" ||
-        json["password"] == "null"
+        json["user"].is_null() ||
+        json["password"].is_null()
     {
-        return error("invalid_request-params".to_string())
+        return server::error("invalid_request-params".to_string());
     }
 
     //extract feilds from json as strings

@@ -12,7 +12,7 @@ const LOG:bool = false;
 
 //read the order here
 #[allow(dead_code)]
-pub fn order(p:String,n:f64,l:u64,d:String) -> Vec<String> {
+pub fn order(p:String,n:f64,l:u64,d:String,last:String) -> Vec<String> {
 
     //p:path n:num l:limit d:direction g:group
 
@@ -86,7 +86,7 @@ pub fn order(p:String,n:f64,l:u64,d:String) -> Vec<String> {
     for i in lists {
         if docs.len() <= limit {
             let group_path = p.clone() + &"order\\" + &i.to_string();
-            let hold = list(group_path,d.clone(),l.clone());
+            let hold = list(group_path,d.clone(),l.clone(),last.clone());
             for j in hold {
                 if docs.len() <= limit {
                     docs.push(j.to_string());
@@ -99,13 +99,11 @@ pub fn order(p:String,n:f64,l:u64,d:String) -> Vec<String> {
         }
     }
 
-    // println!("docs : {:?}",docs);
-
     docs
 
 }
 
-pub fn list(p:String,d:String,l:u64) -> Vec<String> {
+pub fn list(p:String,d:String,l:u64,last:String) -> Vec<String> {
 
     common::log("-------------".to_string(),"".to_string(),LOG);
 
@@ -156,6 +154,11 @@ pub fn list(p:String,d:String,l:u64) -> Vec<String> {
 
     //println!("lists : {:?}",lists);
 
+    let mut control = false;
+    if last.len() == 0 {
+        control = true;
+    }
+
     for i in lists {
         if docs.len() < limit {
             let list_path = p.clone() + &"\\".to_string() + &i.to_string() + &".fult".to_string();
@@ -163,9 +166,14 @@ pub fn list(p:String,d:String,l:u64) -> Vec<String> {
                 let read = files::read_file(list_path);
                 for j in read {
                     if docs.len() < limit {
-                        docs.push(j.to_string());
+                        if control == true {
+                            docs.push(j.to_string());
+                        }
                     } else {
                         break;
+                    }
+                    if j.to_string() == last {
+                        control = true;
                     }
                 }
             }

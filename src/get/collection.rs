@@ -62,6 +62,7 @@ fn fetch(p:String,d:Value) -> Vec<String> {
 
     let limit_object = parse::clean(d.clone()["limit"].to_string());
     let dir_object = parse::clean(d.clone()["dir"].to_string());
+    let last_object = parse::clean(d.clone()["last"].to_string());
 
     let limit;
     if limit_object.parse::<u64>().is_ok() {
@@ -77,6 +78,13 @@ fn fetch(p:String,d:Value) -> Vec<String> {
         dir = "desc".to_string();
     }
 
-    read::list(p,dir,limit)
+    let last;
+    if d.clone()["last"].is_null() {
+        last = String::new();
+    } else {
+        last = last_object;
+    }
+
+    read::list(p,dir,limit,last)
 
 }

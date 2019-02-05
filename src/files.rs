@@ -78,6 +78,14 @@ pub fn write_file(p:String,v:Vec<String>){
     }
 }
 
+//write file with path
+#[allow(dead_code)]
+pub fn re_write_file(p:String,v:Vec<String>){
+    delete_file(p.clone());
+    make_file(p.clone());
+    write_file(p.clone(),v);
+}
+
 //make base db dirs
 #[allow(dead_code)]
 pub fn db_dir(){
@@ -105,6 +113,26 @@ pub fn make_dir(p:String){
     let x = Path::new(&p).exists();
     if x == false {
         fs::create_dir_all(&p).expect("Unable to create directories");
+    }
+}
+
+//delete file with path
+#[allow(dead_code)]
+pub fn delete_dir(p:String) -> bool {
+    if check_dir(p.clone()) == true {
+        let s = fs::remove_dir_all(p.clone());
+        match s {
+            Ok(_n) => {
+                return true
+            },
+            Err(error) => {
+                //panic!("delete file failed, path : {} || error : {}",p.clone(),error);
+                println!("Error while deleteing dir : {:?}",error);
+                return false
+            }
+        }
+    } else {
+        return false
     }
 }
 

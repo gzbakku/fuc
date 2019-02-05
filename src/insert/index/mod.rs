@@ -16,50 +16,85 @@ pub fn process(address:String,docs:Vec<serde_json::value::Value>){
         parse::address_locatify(address.clone()) +
         &"\\index".to_string()
     );
+    let ref_path = files::pathify(
+        parse::address_locatify(address.clone()) +
+        &"\\refs\\".to_string()
+    );
     files::make_dir(collection_path.clone());
-    process_index(collection_path,index_vec,docs);
+    process_index(collection_path,index_vec,docs,ref_path);
     //for testing
     //process_doc(collection_path,index_vec[0].clone(),docs[0].clone());
     //process_index(collection_path,vec![index_vec[1].clone()],vec![docs[0].clone()]);
 }
 
-fn process_index(p:String,i:Vec<parse::Index>,d:Vec<serde_json::value::Value>){
+fn process_index(p:String,i:Vec<parse::Index>,d:Vec<serde_json::value::Value>,ref_path:String){
     for h in i {
         let a = p.clone() + &"\\".to_string() + &h.index_id.to_string();
-        process_docs(a.clone(),h,d.clone());
+        process_docs(a.clone(),h,d.clone(),ref_path.clone());
     }
 }
 
-fn process_docs(p:String,i:parse::Index,d:Vec<serde_json::value::Value>){
+fn process_docs(p:String,i:parse::Index,d:Vec<serde_json::value::Value>,ref_path:String){
     for h in d {
-        process_doc(p.clone(),i.clone(),h);
+        process_doc(p.clone(),i.clone(),h,ref_path.clone());
     }
 }
 
-fn process_doc(mut p:String,i:parse::Index,d:serde_json::value::Value){
+fn process_doc(p:String,i:parse::Index,d:serde_json::value::Value,ref_path:String){
+
     if i.tags_exists == false {
         return
     }
-    let tags = i.clone().tags;
-    let len = tags.clone().len();
-    let mut count = 1;
-    for k in tags {
+
+    let mut refs = Vec::new();
+    let mut index_path = p.clone();
+    let doc_id = parse::md5(d.clone().to_string());
+
+    for k in i.clone().tags {
         if k.function == "equal" {
-            if count == len && i.order_exists == false {
-                p = equal::make(p.clone(),k.clone().tag.to_string(),d.clone(),true);
-            } else {
-                p = equal::make(p.clone(),k.clone().tag.to_string(),d.clone(),false);
-            }
+            index_path = equal::pathify(index_path.clone(),k.clone().tag.to_string(),d.clone());
         } else if k.function == "weight" {
-            order::make(p.clone(),k.clone().tag.to_string(),d.clone())
+            refs = order::make(index_path.clone(),k.clone().tag.to_string(),d.clone())
         } else if k.function == "search" {
-            search::make(p.clone(),k.clone().tag.to_string(),d.clone());
+            refs = search::make(index_path.clone(),k.clone().tag.to_string(),d.clone());
         }
-        count += 1;
+    }
+
+    if i.index_type == "equal" {
+        refs = equal::make(index_path.clone(),doc_id.clone());
     }
     if i.order_exists == true {
-        order::make(p.clone(),i.clone().order.tag.to_string(),d.clone())
+        refs = order::make(index_path.clone(),i.clone().order.tag.to_string(),d.clone())
     }
+
+    make_ref(ref_path,doc_id,refs);
+
+}
+
+fn make_ref(p:String,id:String,refs:Vec<String>){
+
+    files::make_dir(p.clone());
+
+    let doc_path = p.clone() + &id + &".fref".to_string();
+
+    if files::check_file(doc_path.clone()) == false {
+        files::make_file(doc_path.clone());
+    }
+
+    let mut read = files::read_file(doc_path.clone());
+
+    for i in refs {
+        let pos = read.iter().position(|r| r == &i);
+        match pos {
+            Some(_n)=>{},
+            None=>{
+                read.push(i.to_string());
+            }
+        }
+    }
+
+    files::write_file(doc_path,read);
+
 }
 
 fn read_index(id:String,a:String) -> Vec<parse::Index> {

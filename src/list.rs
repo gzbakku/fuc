@@ -4,15 +4,18 @@ mod files;
 
 //insert the doc md5
 #[allow(dead_code)]
-pub fn insert(p:String,s:String) {
+pub fn insert(p:String,s:String) -> String {
     let fult = get_fult(p);
     let mut read = files::read_file(fult.clone());
     let pos = read.iter().position(|r| r == &s);
     match pos {
-        Some(_n)=>{},
+        Some(_n)=>{
+            return String::new();
+        },
         None => {
             read.push(s);
             files::write_file(fult.clone(),read);
+            return fult;
         }
     }
 }

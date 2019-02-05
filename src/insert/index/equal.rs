@@ -8,13 +8,22 @@ mod files;
 #[path="../../list.rs"]
 mod list;
 
-//make index if last make a static list here
-pub fn make(mut p:String,t:String,d:serde_json::value::Value,l:bool) -> String {
+#[path="../../common.rs"]
+mod common;
+
+pub fn pathify(mut p:String,t:String,d:serde_json::value::Value) -> String {
     p.push_str(&("\\".to_string() + &t.clone() + &"\\".to_string() + &parse::clean(d[t.clone()].to_string()) + &"\\".to_string()));
     files::make_dir(p.clone());
-    if l == true {
-        let doc_name = parse::md5(d.to_string());
-        list::insert(p.clone(),doc_name);
-    }
     p
+}
+
+//make index if last make a static list here
+pub fn make(p:String,d:String) -> Vec<String> {
+    let l = list::insert(p,d);
+    if l.len() > 0 {
+        return vec![l.clone()];
+    } else {
+        common::error("list didnt returned a string".to_string());
+        return Vec::new();
+    }
 }

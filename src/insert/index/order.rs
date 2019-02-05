@@ -16,7 +16,7 @@ mod common;
 
 const LOG:bool = false;
 
-pub fn make(mut p:String,t:String,d:serde_json::value::Value){
+pub fn make(mut p:String,t:String,d:serde_json::value::Value) -> Vec<String> {
 
     //println!("inserting into order");
 
@@ -27,10 +27,18 @@ pub fn make(mut p:String,t:String,d:serde_json::value::Value){
     let data_type = identify(t.clone(),d.clone());
     let num = d[t.clone()].to_string();
 
+    let hold;
+
     if data_type == "num" {
-        mapify(p.clone(),num.to_string().clone(),doc_id.clone());
+        hold = mapify(p.clone(),num.to_string().clone(),doc_id.clone());
     } else {
-        mapify(p.clone(),"0".to_string().clone(),doc_id.clone());
+        hold = mapify(p.clone(),"0".to_string().clone(),doc_id.clone());
+    }
+
+    if hold.len() > 0{
+        return vec![hold];
+    } else {
+        return Vec::new();
     }
 
 }
@@ -83,13 +91,8 @@ fn mapify(p:String,i:String,id:String) -> String {
     //make num list here
     let num_path = p.clone() + &"\\".to_string() + &i.clone() + &"\\".to_string();
     files::make_dir(num_path.clone());
-    list::insert(num_path.clone(),id.clone());
 
-    common::log("listed".to_string(),"".to_string(),LOG);
-
-    common::log("----------------".to_string(),"".to_string(),LOG);
-
-    num_path
+    list::insert(num_path.clone(),id.clone())
 
 }
 

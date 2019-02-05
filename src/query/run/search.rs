@@ -23,6 +23,7 @@ pub fn run(p:String,t:String,d:serde_json::value::Value) -> Vec<String> {
 
     let limit_object = parse::clean(d.clone()["limit"].to_string());
     let dir_object = parse::clean(d.clone()["dir"].to_string());
+    let last_object = parse::clean(d.clone()["last"].to_string());
 
     let limit;
     if limit_object.parse::<u64>().is_ok() {
@@ -36,6 +37,13 @@ pub fn run(p:String,t:String,d:serde_json::value::Value) -> Vec<String> {
         dir = dir_object.to_string();
     } else {
         dir = "desc".to_string();
+    }
+
+    let last;
+    if d.clone()["last"].is_null() {
+        last = String::new();
+    } else {
+        last = last_object;
     }
 
     let path = p.clone() +
@@ -55,9 +63,9 @@ pub fn run(p:String,t:String,d:serde_json::value::Value) -> Vec<String> {
     // println!("words : {:?}",words.clone());
 
     if check_tree(path.clone(),words.clone()) == false {
-        docs = read_tree(path.clone(),vec![words.clone()[0].to_string()],dir,limit);
+        docs = read_tree(path.clone(),vec![words.clone()[0].to_string()],dir,limit,last);
     } else {
-        docs = read_tree(path.clone(),words.clone(),dir,limit);
+        docs = read_tree(path.clone(),words.clone(),dir,limit,last);
     }
 
     docs
@@ -174,13 +182,8 @@ fn check_tree(p:String,w:Vec<String>) -> bool {
     files::check_dir(address)
 }
 
-fn read_tree(p:String,w:Vec<String>,d:String,l:u64) -> Vec<String> {
-
-    let pool;
-    let address = build_tree_address(p,w);
-    pool = read::list(address,d,l);
-    pool
-
+fn read_tree(p:String,w:Vec<String>,d:String,l:u64,last:String) -> Vec<String> {
+    read::list(build_tree_address(p,w),d,l,last)
 }
 
 fn build_tree_address(p:String,w:Vec<String>) -> String {

@@ -1,14 +1,14 @@
 
-#[path="../server.rs"]
+#[path="./server.rs"]
 mod server;
 
-#[path="../files.rs"]
+#[path="./files.rs"]
 pub mod files;
 
-#[path="../auth.rs"]
+#[path="./auth.rs"]
 pub mod auth;
 
-#[path="../parse.rs"]
+#[path="./parse.rs"]
 pub mod parse;
 
 use iron::status;
