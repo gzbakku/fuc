@@ -21,7 +21,7 @@ pub fn controller(json: serde_json::value::Value) -> String {
 
     //check json keys
     if
-        json["key"] == "null" ||
+        json["tokens"] == "null" ||
         json["user"] == "null" ||
         json["query"] == "null" ||
         json["address"] == "null"
