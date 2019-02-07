@@ -31,6 +31,7 @@ mod insert;
 mod query;
 mod get;
 mod delete;
+mod update;
 
 //this is used to send erros
 mod server;
@@ -62,6 +63,8 @@ fn main() {
 
     router.post("/delete/docs", delete::docs_controller, "delete_docs");
     router.post("/delete/collection", delete::collection_controller, "delete_collection");
+
+    router.post("/update", update::update_controller, "update_doc");
 
     Iron::new(router).http("localhost:3000").unwrap();
 

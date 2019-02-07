@@ -18,6 +18,52 @@ pub struct ResultKey {
     pub message:String
 }
 
+//***************************************************
+//update
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[derive(Serialize)]
+pub struct DocId {
+    pub new_id:String
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+#[derive(Serialize)]
+pub struct ResultUpdate {
+    pub success:bool,
+    pub error:String,
+    pub docs:DocId,
+    pub message:String
+}
+
+#[allow(dead_code)]
+pub fn success_update(s:String) -> String {
+    stringify_update(ResultUpdate {
+        success:true,
+        error:String::new(),
+        docs:DocId{
+            new_id:s
+        },
+        message:String::new(),
+    })
+}
+
+#[allow(dead_code)]
+fn stringify_update(hold: ResultUpdate) -> String {
+    let work = serde_json::to_string(&hold);
+    match work {
+        Ok(n) => {
+            return n
+        },
+        Err(err) => {
+            println!("{:?}",err);
+            return "error".to_string()
+        }
+    };
+}
+
 
 //***************************************************
 //connect

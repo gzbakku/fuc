@@ -327,6 +327,33 @@ this query returns doc id of all the docs in a collection which can be listed by
 
 these doc ids can be canverted to docs using get docs query.
 
+## Update 
+this query takes doc id and data and update the previous doc and its indexes, only one doc can be update in a single query 100 unique queries can be called at once.this function returns the new doc id.
+
+```sh 
+{
+    user:'akku',
+    token:'ds89f7sd89f7sd89f7sd89f7s89df',
+    address:'collectionAddress',
+    id:'sdaf78dsf798sd7f8s89s897987',
+    doc:{
+        name:'doku',
+        mobile:9119119119
+    }
+}
+```
+
+#### Response
+
+```sh 
+{
+    result:true,
+    error:null,
+    docs:{new_id:'sdf786sd7f667678sd6f78sd6fdfdf'}
+    message:null
+}
+```
+
 ## Delete
 
 ### Delete Docs
