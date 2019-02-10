@@ -19,13 +19,13 @@ pub fn check_file(p:String) -> bool {
 //read file with path
 #[allow(dead_code)]
 pub fn read_file(p:String) -> Vec<String> {
-    let o = File::open(p.clone()).unwrap();
-    let r = BufReader::new(o);
     let mut pool: Vec<String> = Vec::new();
     if check_file(p.clone()) == false {
         println!("read_file-failed : file not found => path : {:?}",p.clone());
         return pool;
     }
+    let o = File::open(p.clone()).unwrap();
+    let r = BufReader::new(o);
     for line in r.lines() {
         match line {
             Ok(data) => {
@@ -44,10 +44,19 @@ pub fn read_file(p:String) -> Vec<String> {
 pub fn make_file(p:String) -> bool {
     let x = Path::new(&p).exists();
     if x == false {
-        File::create(&p).expect("Unable to create file");
-        return true
+        let m = File::create(p.clone());
+        match m {
+            Ok(_)=>{
+                return true;
+            },
+            Err(_error)=>{
+                println!("make file failed => path : {:?}",p.clone());
+                return false;
+            }
+        }
+    } else {
+        return false;
     }
-    return false
 }
 
 //delete file with path
@@ -59,8 +68,8 @@ pub fn delete_file(p:String) -> bool {
             Ok(_n) => {
                 return true
             },
-            Err(_error) => {
-                //panic!("delete file failed, path : {} || error : {}",p.clone(),error);
+            Err(error) => {
+                println!("delete file failed, path : {} || error : {}",p.clone(),error);
                 return false
             }
         }

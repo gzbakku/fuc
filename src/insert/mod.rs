@@ -52,9 +52,7 @@ pub fn controller(json: serde_json::value::Value) -> String {
         return error("access-denied".to_string())
     }
 
-    if check_index(address.clone()) == false {
-        return error("index-not_found".to_string())
-    }
+
 
     //extract docs in a vec from vec strings
     let hold = arrayrify(docs);
@@ -67,14 +65,22 @@ pub fn controller(json: serde_json::value::Value) -> String {
             panic!(error)
         }
     }
-    let docs = documentify(array);
+    //these are docs before chcking if they exists
+    let docs_raw = documentify(array);
+    //these are docs after checking if they exists
+    let docs = check_docs(address.clone(),docs_raw.clone());
 
+    //check if the checked docs are in limit
     if docs.len() > 100 {
         return error("docs array exeeding the limit of 100 items.".to_string());
     }
 
     //read the collection's index
-    index::process(address.clone(),docs.clone());
+    if check_index(address.clone()) == true {
+        index::process(address.clone(),docs.clone());
+    }
+
+    //this function saves the docs as json file in the collection
     savify(address.clone(),docs.clone());
 
     return success();
@@ -85,29 +91,39 @@ pub fn controller(json: serde_json::value::Value) -> String {
 //modular functions
 
 fn check_index(address:String) -> bool {
-
     let collection_id = parse::collection_id(address.clone());
-
     let collection_path = files::pathify(
         "\\fuc\\index\\".to_string() +
         &collection_id.to_string() +
         &".fui".to_string()
     );
-
     if files::check_file(collection_path.clone()) == false {
         common::error("index-not_found".to_string());
         return false;
     }
-
     let read = files::read_file(collection_path.clone());
-
     if read.len() == 0 {
         common::error("index-empty".to_string());
         return false;
     } else {
         return true;
     }
+}
 
+fn check_docs(address:String,docs:Vec<Value>) -> Vec<Value> {
+    let collection_path = files::pathify(
+        parse::address_locatify(address.clone()) +
+        &"\\docs".to_string()
+    );
+    let mut coll : Vec<Value> = Vec::new();
+    for i in docs {
+        let doc_id = parse::md5(i.clone().to_string());
+        let doc_path = collection_path.clone() + &"\\".to_string() + &doc_id + &".json".to_string();
+        if files::check_file(doc_path) == false {
+            coll.push(i.clone());
+        }
+    }
+    return coll;
 }
 
 //insert serde doc as a string to a file

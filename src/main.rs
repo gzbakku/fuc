@@ -18,6 +18,8 @@ extern crate serde_derive;
 use iron::status;
 use iron::prelude::*;
 use router::Router;
+use std::env;
+use std::net::TcpListener;
 
 //******************************************************
 //mods
@@ -41,7 +43,41 @@ mod server;
 
 fn main() {
 
-    println!("listing on port 3000");
+    let args: Vec<String> = env::args().collect();
+
+    let port;
+
+    if args.len() >= 2 {
+        let port_object = &args[1];
+        if port_object.parse::<u16>().is_ok() {
+            port = port_object.parse::<u16>().unwrap();
+        } else {
+            port = "3000".to_string().parse::<u16>().unwrap();
+        }
+    } else {
+        port = "3000".to_string().parse::<u16>().unwrap();
+    }
+
+    if check_port(port.clone()) == true {
+        serve(port.to_string());
+    } else {
+        println!("!!! port in use");
+    }
+
+}
+
+fn check_port(port:u16) -> bool {
+    match TcpListener::bind(("127.0.0.1", port)) {
+        Ok(_) => {return true;},
+        Err(_) => {return false;},
+    }
+}
+
+fn serve(port:String){
+
+    println!("listing on port : {}",port.clone());
+
+    let url = "127.0.0.1:".to_string() + &port.to_string();
 
     let mut router = Router::new();
 
@@ -66,7 +102,7 @@ fn main() {
 
     router.post("/update", update::update_controller, "update_doc");
 
-    Iron::new(router).http("localhost:3000").unwrap();
+    Iron::new(router).http(url).unwrap();
 
 }
 
