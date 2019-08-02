@@ -13,7 +13,7 @@ pub fn process(address:String,docs:Vec<serde_json::value::Value>){
 
     let collection_id = parse::collection_id(address.clone());
     let index_vec = read_index(collection_id.clone(),address.clone());
-    
+
     let collection_path = files::pathify(
         parse::address_locatify(address.clone()) +
         &"\\index".to_string()
@@ -25,15 +25,7 @@ pub fn process(address:String,docs:Vec<serde_json::value::Value>){
 
     files::make_dir(collection_path.clone());
 
-    //println!("collection_id : {:?}",collection_id);
-    //println!("collection_path : {:?}",collection_path);
-    //println!("ref_path : {:?}",ref_path);
-
     process_index(collection_path,index_vec,docs,ref_path);
-
-    //for testing
-    //process_doc(collection_path,index_vec[0].clone(),docs[0].clone());
-    //process_index(collection_path,vec![index_vec[1].clone()],vec![docs[0].clone()]);
 
 }
 

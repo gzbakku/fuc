@@ -52,8 +52,6 @@ pub fn controller(json: serde_json::value::Value) -> String {
         return error("access-denied".to_string())
     }
 
-
-
     //extract docs in a vec from vec strings
     let hold = arrayrify(docs);
     let array:Value;

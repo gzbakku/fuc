@@ -11,10 +11,6 @@ mod auth;
 #[path="../parse.rs"]
 mod parse;
 
-// #[allow(dead_code)]
-// use crypto::sha2::Sha256;
-// use crypto::digest::Digest;
-
 pub fn controller(json: serde_json::value::Value) -> String {
 
     files::db_dir();
